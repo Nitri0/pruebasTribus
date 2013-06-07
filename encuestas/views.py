@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from encuestas.models import Encuesta
 
@@ -11,13 +11,6 @@ def index(request):
 def detalles(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
     return render(request, 'encuestas/detalles.html', {'encuesta': encuesta})
-
-#def detalles(request, encuesta_id):
-#    try:
-#        encuesta = Encuesta.objects.get(pk=encuesta_id)   
-#    except Encuesta.DoesNotExist:
-#        raise Http404
-#    return render(request, 'encuestas/detalles.html', {'encuesta': encuesta})
     
 def resultados(request, encuesta_id):
     return HttpResponse("You're looking at the results of poll %s." % encuesta_id)
