@@ -4,6 +4,8 @@ from django.db import models
 class Mantenedor(models.Model):
     nombre_completo = models.CharField("nombre del mantenedor", max_length = 100)
     correo = models.EmailField("correo electronico del mantenedor", max_length= 75)
+    paquetes = models.ManyToManyField('self', null=True, symmetrical = False, blank=True)
+    
     
     def __unicode__(self):
         return self.nombre_completo
@@ -30,7 +32,7 @@ class Paquete(models.Model):
                      ('i386', 'i386'),
                      ('amd', 'amd'),
     ))
-    #dependencias = models.ManyToManyField(symmetrical=False)
+    dependencias = models.ManyToManyField('self', null=True, symmetrical = False, blank=True)
     
     class Meta:
         ordering = ["nombre"]

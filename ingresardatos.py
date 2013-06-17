@@ -22,7 +22,6 @@ for seccion in paquetes:
     else:
         nMantenedor = Mantenedor(nombre_completo = nombreMan, correo = correoMan)
         nMantenedor.save()
-        print nMantenedor
         nPaquete = Paquete(mantenedor = nMantenedor,
                            nombre = seccion.get('Package'),
                            arquitectura = seccion.get('Architecture'))
