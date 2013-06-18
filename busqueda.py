@@ -1,53 +1,41 @@
 import email.Utils, re, string
-from django.core.management import setup_environ
-from pruebasTribus import settings
+#from django.core.management import setup_environ
+#from pruebasTribus import settings
 from apt import apt_pkg
-from paqueteria.models import Mantenedor, Paquete
+#from paqueteria.models import Mantenedor, Paquete
 
-setup_environ(settings)
+#setup_environ(settings)
 apt_pkg.init()
 
 paquetes = apt_pkg.TagFile(open('/home/fran/Packages'))
 
-def resolvedor(paquete, nombre_archivo):
+def pkg_solver(paquete, nombre_archivo):
     seccion = buscar(paquete, nombre_archivo)
-    if seccion == None: # Esto quiere decir que no encontro una seccion
-        print "No he encontrado la ultima seccion"
-    else:
-        depends = seccion.get('Depends')
-        if depends == None:
-            print "Esta vacio"
+    dependencias = listar_dependencias(seccion)
+    lista_dep_op = [string.strip(n, " ") for n in dependencias]
+    for d in lista_dep_op:
+        if re.findall("\|", d):
+            pass
+        elif re.findall("\s", d): 
+            pass
         else:
-            #expresion regular q saca los valores dentro de parentesis
-            regexp1 = "\(\W*\D*\S*w*\d*\)"
-            x = string.splitfields(depends, ",")
-            for i in x:
-                if re.findall("\|", i):
-                    lista = string.splitfields(i, "|")
-                    lista_dep_op = [string.strip(n, " ") for n in lista]
-                    for dep_op in lista_dep_op:
-                        resolvedor(dep_op, nombre_archivo) 
-                    
-                    # Aqui registraria dependencias opcionales
-                    print "Esto es una dependencia opcional: ", i
-                else:
-                    # Aqui registraria las depencias simples
-                    #print "Esto es una dependencia simple:", i
-                    pass
+            print d, listar_dependencias(buscar(d, nombre_archivo))
+            
+def listar_dependencias(seccion): 
+    if seccion == None:
+        print "Aparentemente el paquete no tiene mas dependencias"
+        return ""
+    else:
+        deps = seccion.get('Depends')
+        if deps != None:    
+            return string.splitfields(deps, ",")
+        else:
+            return deps
 
 def buscar(paquete, nombre_archivo):
+    nombre_archivo.jump(0)
     for section in nombre_archivo:
         if section.get('Package') == paquete:
             return section
-    return None
 
-resolvedor("0ad", paquetes)
-
-
-
-
-
-
-
-
-        
+pkg_solver("banshee", paquetes)
