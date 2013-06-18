@@ -1,53 +1,49 @@
 import email.Utils, re, string
-#from django.core.management import setup_environ
-#from pruebasTribus import settings
 from apt import apt_pkg
-#from paqueteria.models import Mantenedor, Paquete
-#setup_environ(settings)
 apt_pkg.init()
 
 paquetes = apt_pkg.TagFile(open('/home/fran/Packages'))
 
+lista_registro = []
+
 def pkg_solver(paquete, nombre_archivo):
-    print "##########################################"
-    print "RESOLVIENDO DEPENDENCIAS DE: ", paquete
-    print "##########################################"
     seccion = buscar(paquete, nombre_archivo)
-    #print "SECCION: "
-    #print seccion
-    #print "##########################################"
     dependencias = listar_dependencias(seccion)
-    #print "##########################################"
-    #print "DEPENDENCIAS LOCALIZADAS: "
-    #print dependencias
-    #print "##########################################"
-    lista_dep_op = [string.strip(n, " ") for n in dependencias]
-    #print "##########################################"
-    for d in lista_dep_op:
-        if re.findall("\|", d):
-            d = string.splitfields(d, " | ", 1)
-            print d
-        elif re.findall("\s", d): 
-            d = string.splitfields(d, " ", 1)
-            print d
-            for x in listar_dependencias(buscar(d[0], nombre_archivo)):
-                pkg_solver(x, nombre_archivo)
-        else:
-            print d
-            for x in listar_dependencias(buscar(d, nombre_archivo)):
-                pkg_solver(x, nombre_archivo)
-                 
-def listar_dependencias(seccion): 
-    if seccion == None:
-        print "No se ha encontrado el paquete o no hay mas dependencias"
-        return ""
+    if dependencias == None:
+        print "No se encontraron mas dependencias"
     else:
+        lista_dep_op = [string.strip(n, " ") for n in dependencias]
+        for dep in lista_dep_op:
+            
+            if dep not in lista_registro:
+                if re.findall("\|", dep):
+                    dep = string.splitfields(dep, " | ")
+                    for d in dep:
+                        if re.findall("\s", d):
+                            d = string.splitfields(d, " ", 1)[0]
+                            if d not in lista_registro:
+                                lista_registro.append(d)
+                                pkg_solver(d, nombre_archivo)
+                                      
+                elif re.findall("\s", dep):
+                    dep = string.splitfields(dep, " ", 1)[0]
+                    if dep not in lista_registro:
+                        lista_registro.append(dep)
+                        pkg_solver(dep, nombre_archivo)
+                    
+                else:
+                    if dep not in lista_registro:
+                        lista_registro.append(dep)
+                        pkg_solver(dep, nombre_archivo)
+                            
+def listar_dependencias(seccion):
+    if seccion != None:
         deps = seccion.get('Depends')
         if deps != None:    
-            return string.splitfields(deps, ",")
+            return string.splitfields(deps, ", ")
         else:
-            return ""
-
+            return None
+                
 def buscar(paquete, nombre_archivo):
     nombre_archivo.jump(0)
     for section in nombre_archivo:
@@ -55,3 +51,4 @@ def buscar(paquete, nombre_archivo):
             return section
 
 pkg_solver("blender", paquetes)
+print len(lista_registro)
