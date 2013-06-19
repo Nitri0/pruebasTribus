@@ -9,6 +9,9 @@ base = []
 
 # Metodo 'simple'
 
+#def reg_paquete(seccion):
+    
+
 def pkg_solver(paquete, nombre_archivo):
     seccion = buscar(paquete, nombre_archivo)
     dependencias = listar_dependencias(seccion)
@@ -45,7 +48,8 @@ def pkg_solver(paquete, nombre_archivo):
                         print "Ya se ha registrado: ", dep
     else:
         base.append(paquete)
-
+    
+    
 # Metodo Extendido
 
 def pkg_solver_ext(paquete, nombre_archivo):
