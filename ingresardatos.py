@@ -13,18 +13,14 @@ class dependencia_simple(object):
         self.nombre = nombre
         self.version = version
 
-def buscar(paquete, archivo):
+def buscar_seccion(paquete, archivo):
     parar = True
-    archivo.jump(0)
+    
     while parar != False:
         parar = archivo.step()
         if archivo.section.get('Package') == paquete:
             return archivo.section
-        
-def buscar_for(paquete, archivo):
-    for section in archivo:
-        if section.get('Package') == paquete:
-            return section
+    a1.jump(0)
         
 def buscar_mantenedor(seccion):
     nombreMan, correoMan = email.Utils.parseaddr(seccion.get("Maintainer"))
@@ -38,23 +34,17 @@ def buscar_mantenedor(seccion):
 
 def buscar_paquete(seccion):
     if seccion == None:
-        #print seccion
-        #print "Paquete no encontrado"
         return
     nombre_paquete = seccion.get("Package")
     mantenedor_paquete = buscar_mantenedor(seccion)
     arqui_paquete = seccion.get("Architecture")
-    paquete_existe = Paquete.objects.filter(nombre = nombre_paquete, 
-                                            mantenedor = mantenedor_paquete,
-                                            arquitectura = arqui_paquete
-                                            )
+    paquete_existe = Paquete.objects.filter(nombre = nombre_paquete, mantenedor = mantenedor_paquete,
+                                            arquitectura = arqui_paquete)
     if len(paquete_existe):
         return paquete_existe[0]
     else:
-        nPaquete = Paquete(nombre = nombre_paquete, 
-                           mantenedor = mantenedor_paquete,
-                           arquitectura = arqui_paquete
-                           )
+        nPaquete = Paquete(nombre = nombre_paquete, mantenedor = mantenedor_paquete,
+                           arquitectura = arqui_paquete)
         nPaquete.save()
         return nPaquete
 
@@ -96,7 +86,6 @@ def listar_dependencias(seccion):
     
 def buscar_dep_simple(seccion):
     paquete = buscar_paquete(seccion)
-    # Solucion temporal mientras identifico el problema
     if paquete == None:
         return
     dep_existe = DependenciaSimple.objects.filter(dep = paquete)
@@ -106,44 +95,60 @@ def buscar_dep_simple(seccion):
         dep_simple = DependenciaSimple(dep = paquete)
         dep_simple.save()
         return dep_simple
-    
-def registrar_dependencias_for(paquete, lista_dependencias, archivo):
-    for dep in lista_dependencias:
-        d = dep.nombre
-        sect = buscar(d, archivo)
-        ds = buscar_dep_simple(sect)
-        paquete.dependenciaSimple.add(ds)
-        
-def registrar_lista_paquetes_for(archivo):
-    for seccion in archivo:
-        paquete = buscar_paquete(seccion)
-        simple = listar_dependencias(seccion)
-        registrar_dependencias(paquete, simple, archivo)
-        
+     
 def registrar_dependencias(paquete, lista_dependencias, archivo):
     for dep in lista_dependencias:
+        if dep in blacklist:
+            continue
         d = dep.nombre
-        sect = buscar(d, archivo)
+        sect = buscar_seccion(d, archivo)
         if sect != None:
             ds = buscar_dep_simple(sect)
+            ds.save()
             paquete.dependenciaSimple.add(ds)
+            
         else:
+            blacklist.append(d)
             print "Probablemente", d, "sea un paquete virtual provisto por otro paquete, de momento no se registrara"
-                
+
+def registrar_paquetes(archivo):
+    tmpoffset = 0
+    parar = True
+    while parar != False:
+        archivo.jump(tmpoffset)
+        parar = archivo.step()
+        seccion_actual = a1.section
+        tmpoffset = archivo.offset()
+        paquete = buscar_paquete(seccion_actual)
+        print paquete
+        simple = listar_dependencias(seccion_actual)
+        registrar_dependencias(paquete, simple, archivo)                
+
 a1 = apt_pkg.TagFile(open('/home/fran/Packages'))
 
-#print buscar("gnustep-fslayout-fhs", a1)
+blacklist = []
 
-tmpoffset = 0
-parar = True
-while parar != False:
-    a1.jump(tmpoffset)
-    parar = a1.step()
-    seccion_actual = a1.section
-    tmpoffset = a1.offset()
-    #print seccion_actual
-    paquete = buscar_paquete(seccion_actual)
-    print paquete
-    simple = listar_dependencias(seccion_actual)
-    registrar_dependencias(paquete, simple, a1)
+#registrar_paquetes(a1)
+
+sec = buscar_seccion("0ad", a1)
+print sec
+ceroad = buscar_paquete(sec)
+print type(ceroad)
+dep_ceroad = listar_dependencias(sec)
+print dep_ceroad
+registrar_dependencias(ceroad, dep_ceroad, a1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
