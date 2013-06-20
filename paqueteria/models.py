@@ -26,7 +26,7 @@ class DependenciaSimple(models.Model):
     dep = models.ForeignKey('Paquete')
 
     def __unicode__(self):
-         return self.dep.nombre
+        return self.dep.nombre
 
 class DependenciaOR(models.Model):
     dep = models.ManyToManyField(DependenciaSimple, null=True, symmetrical = False, blank=True)
@@ -47,6 +47,7 @@ class Paquete(models.Model):
     ))
     dependenciaSimple = models.ManyToManyField(DependenciaSimple, null=True, symmetrical = False, blank=True)
     dependenciaOR = models.ManyToManyField(DependenciaOR, null=True, symmetrical = False, blank=True)
+    md5sum = models.TextField("llave md5 del paquete", max_length = 75)
     
     class Meta:
         ordering = ["nombre"]

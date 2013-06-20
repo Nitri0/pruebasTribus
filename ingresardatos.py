@@ -38,8 +38,9 @@ def buscar_paquete(seccion):
     nombre_paquete = seccion.get("Package")
     mantenedor_paquete = buscar_mantenedor(seccion)
     arqui_paquete = seccion.get("Architecture")
+    md5_paquete = seccion.get("MD5sum")
     paquete_existe = Paquete.objects.filter(nombre = nombre_paquete, mantenedor = mantenedor_paquete,
-                                            arquitectura = arqui_paquete)
+                                            arquitectura = arqui_paquete, md5sum = md5_paquete)
     if len(paquete_existe):
         return paquete_existe[0]
     else:
@@ -137,18 +138,3 @@ print type(ceroad)
 dep_ceroad = listar_dependencias(sec)
 print dep_ceroad
 registrar_dependencias(ceroad, dep_ceroad, a1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
