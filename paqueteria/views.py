@@ -1,10 +1,21 @@
 # Create your views here.
-'''
+
 # -*- coding: utf-8 -*-
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-from encuestas.models import Encuesta
+from paqueteria.models import Paquete,Mantenedor,DependenciaSimple,DependenciaOR
 
+def index(request):
+    blender=Paquete.objects.all().
+    contexto = {"blender":blender}
+    print len (blender)
+    return render (request,'encuestas/index.html', contexto)
+
+
+#def busqueda (request, valor):
+    
+
+'''
 def index(request):
     ultima_lista_encuestas = Encuesta.objects.order_by('-fecha_pub')[:5]
     contexto = {'ultima_lista_encuestas': ultima_lista_encuestas}    

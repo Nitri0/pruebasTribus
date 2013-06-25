@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 import string
+
 class Mantenedor(models.Model):
     nombre_completo = models.CharField("nombre del mantenedor", max_length = 100)
     correo = models.EmailField("correo electronico del mantenedor", max_length= 75)
@@ -26,7 +27,7 @@ class DependenciaSimple(models.Model):
     dep = models.ForeignKey('Paquete')
 
     def __unicode__(self):
-         return self.dep.nombre
+        return self.dep.nombre
 
 class DependenciaOR(models.Model):
     dep = models.ManyToManyField(DependenciaSimple, null=True, symmetrical = False, blank=True)
