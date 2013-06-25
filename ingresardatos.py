@@ -1,29 +1,19 @@
 import email.Utils
-#from django.core.management import setup_environ
-#from pruebasTribus import settings
+from django.core.management import setup_environ
+from pruebasTribus import settings
 from apt import apt_pkg
 from paqueteria.models import Mantenedor, Paquete, DependenciaSimple, DependenciaOR
 import re, string
 
-#setup_environ(settings)
+setup_environ(settings)
 apt_pkg.init()
 
 class dependencia_simple(object):
     def __init__(self, nombre, version = None):
         self.nombre = nombre
         self.version = version
-
-def buscar_seccion(paquete, archivo):
-    seccionvalida = True
-    archivo.step()
-    print "Este es el nombre que estoy buscando", paquete
-    while seccionvalida:
-        seccionvalida = archivo.step()
-        if archivo.section.get('Package') == paquete:
-            return archivo.section
-    a1.jump(0)
     
-def buscar_seccion_for(paquete, archivo):
+def buscar_seccion(paquete, archivo):
     archivo.jump(0)
     for section in archivo:   
         if section.get('Package') == paquete:
@@ -39,37 +29,42 @@ def buscar_mantenedor(seccion):
         nMantenedor.save()
     return nMantenedor
 
-def buscar_paquete(seccion):
+def buscar_paquete(seccion, npaquete = None):
     if seccion != None:
-        nombre = seccion.get("Package")
-        instsize = seccion.get("Installed-Size")
-        version = seccion.get("Version")
+        nombre_pq = seccion.get("Package")
+        instsize_pq = seccion.get("Installed-Size")
+        version_pq = seccion.get("Version")
         mantenedor_paquete = buscar_mantenedor(seccion)
-        arquitectura = seccion.get("Architecture")
-        size = seccion.get("Size")
-        sha256 =  seccion.get("SHA256") 
-        sha1 = seccion.get("SHA1")
-        md5sum = seccion.get("MD5sum")
-        descripcion = seccion.get("Description")
-        pagina = seccion.get("Homepage")
-        desmd5 = seccion.get("Description-md5")
-        sec = seccion.get("Section")
-        prioridad = seccion.get("Priority")
-        nombrearchivo = seccion.get("Filename")
-        paquete_existe = Paquete.objects.filter(nombre = nombre, md5sum = md5sum)
+        arquitectura_pq = seccion.get("Architecture")
+        size_pq = seccion.get("Size")
+        sha256_pq =  seccion.get("SHA256") 
+        sha1_pq = seccion.get("SHA1")
+        md5sum_pq = seccion.get("MD5sum")
+        descripcion_pq = seccion.get("Description")
+        pagina_pq = seccion.get("Homepage")
+        desmd5_pq = seccion.get("Description-md5")
+        sec_pq = seccion.get("Section")
+        prioridad_pq = seccion.get("Priority")
+        nombrearchivo_pq = seccion.get("Filename")
+        paquete_existe = Paquete.objects.filter(nombre = nombre_pq, md5sum = md5sum_pq)
         if len(paquete_existe):
             return paquete_existe[0]
         else:
-            nPaquete = Paquete(nombre = nombre, version = version, size = size,
-                               instsize = instsize, sha256 = sha256, sha1 = sha1,
-                               mantenedor = mantenedor_paquete, desmd5 = desmd5,
-                               descripcion = descripcion, pagina = pagina, seccion = sec,
-                               prioridad = prioridad, nombrearchivo = nombrearchivo,
-                               arquitectura = arquitectura, md5sum = md5sum)
+            nPaquete = Paquete(nombre = nombre_pq, version = version_pq, size = size_pq,
+                               instsize = instsize_pq, sha256 = sha256_pq, sha1 = sha1_pq,
+                               mantenedor = mantenedor_paquete, desmd5 = desmd5_pq,
+                               descripcion = descripcion_pq, pagina = pagina_pq, seccion = sec_pq,
+                               prioridad = prioridad_pq, nombrearchivo = nombrearchivo_pq,
+                               arquitectura = arquitectura_pq, md5sum = md5sum_pq)
             nPaquete.save()
             return nPaquete
     else:
-        return
+        if npaquete:
+            # si la seccion es nula, es probable que se trate de un paquete virtual
+            # por lo tanto creamos aqui un paquete solo con el nombre
+            nPaquete = Paquete(nombre = npaquete)
+            nPaquete.save()
+            return nPaquete
         
 def listar_dependencias(seccion):
     dependencias = {}
@@ -97,16 +92,14 @@ def listar_dependencias(seccion):
             elif re.findall("\s", d):                
                 obj = string.splitfields(d, " ", 1)
                 sp = dependencia_simple(obj[0], obj[1])
-                
                 dependencias["simples"].append(sp)
-
             else:
                 sp = dependencia_simple(d)
                 dependencias["simples"].append(sp)
         return dependencias
     
-def buscar_dep_simple(seccion):
-    paquete = buscar_paquete(seccion)
+def buscar_dep_simple(seccion, npaq = None):
+    paquete = buscar_paquete(seccion, npaq)
     dep_existe = DependenciaSimple.objects.filter(dep = paquete)
     if len(dep_existe):
         return dep_existe[0]
@@ -114,14 +107,25 @@ def buscar_dep_simple(seccion):
         dep_simple = DependenciaSimple(dep = paquete)
         dep_simple.save()
         return dep_simple
-     
+
+def buscar_dep_comp(seccion, dep):
+    paquete = buscar_paquete(seccion)
+    dep_existe = DependenciaOR.objects.filter(dep__dep__nombre = dep[0].nombre)
+    if len(dep_existe):
+        return dep_existe[0]
+    else:
+        depcomp = DependenciaOR()
+        depcomp.save()
+        paquete.dependenciaOR.add(depcomp)
+        return depcomp
+    
 def registrar_dependencias_simples(paquete, lista_dependencias, archivo):
     for dep in lista_dependencias:
         if dep in blacklist:
+            print "En algun momento paso por aqui de verdad?"
             continue
         d = dep.nombre
-        #sect = buscar_seccion(d, archivo)
-        sect = buscar_seccion_for(d, archivo)
+        sect = buscar_seccion(d, archivo)
         if sect != None:
             depsim = buscar_dep_simple(sect)
             depsim.save()
@@ -129,24 +133,43 @@ def registrar_dependencias_simples(paquete, lista_dependencias, archivo):
         else:
             blacklist.append(d)
             
-def registrar_dependencias_comp(paquete, lista_dependencias, archivo):
+def registrar_dependencias_comp(npaquete, lista_dependencias, archivo):
     if lista_dependencias:
         for dep in lista_dependencias:
-            depcomp = DependenciaOR()
-            depcomp.save()
-            paquete.dependenciaOR.add(depcomp) # Hasta aqui se que esta bien porque esta creando 3 instancias de dependenciasOR
-            for d in dep:
-                n = d.nombre
-                print "##########"
-                sect = buscar_seccion_for(n, archivo)
-                #print n
-                #print sect
-                print "##########"
-                if sect != None:
-                    ds = buscar_dep_simple(sect)
+            sec = buscar_seccion(npaquete, archivo)
+            depcomp = buscar_dep_comp(sec, dep)
+            if depcomp.dep.all():
+                print "No hago nada porque ya estan registradas las dependencias"
+            else:
+                for d in dep:
+                    n = d.nombre
+                    sect = buscar_seccion(n, archivo)
+                    #if sect != None:
+                    ds = buscar_dep_simple(sect, n)
                     ds.save()
                     depcomp.dep.add(ds)
-                    
+                    #else:
+                    #    print "Probablemente se trate de un paquete virtual: ", n
+                        # Como puedo crear una dependencia hacia un paquete virtual?
+                        # el paquete virtual no saldra en la lista y necesito informacion
+                        # para registrarlo debidamente.
+                        # Conceptualmente hay un fallo aqui porque el modelo planteado 
+                        # solo permite el registro de depencias que esten en la lista
+                        # mientras que las dependencias virtuales no son tomadas en cuenta
+                        # esto puede resolverse agregando un modelo para representar las
+                        # dependencias virtuales.
+                        # Lo ideal seria que pudiera registrar juntas dependencias reales y dependencias
+                        # virtuales, pero algo me dice que no podre =/ por restricciones de la clave 
+                        # foranea que me pedira un mismo tipo de objeto al cual referenciar.
+                        # La unica solucion que se me ocurre por el momento es modificar el modelo 
+                        # paquete para que acepte valores nulos y vacios en todos sus campos, menos en el nombre
+                        # de modo que pueda registrar paquetes solo con su nombre, lo cual representaria 
+                        # los paquetes virtuales. En teoria esta solucion mantendria el concepto original 
+                        # y resuelve el conflicto de los paquetes virtuales sin muchas consecuencias.
+                        # Seria util agregar unas consultas para demostrar la utilidad de este concepto, 
+                        # es decir consultas que soliciten todos los paquetes que dependen de X dependencia
+                        # simple o compuesta
+                       
 def registrar_paquetes(archivo):
     tmpoffset = 0
     seccionvalida = True
@@ -158,7 +181,7 @@ def registrar_paquetes(archivo):
         paquete = buscar_paquete(seccion_actual)
         dict_dep = listar_dependencias(seccion_actual)
         registrar_dependencias_simples(paquete, dict_dep["simples"], archivo)
-        registrar_dependencias_comp(paquete, dict_dep["comp"], archivo)
+        registrar_dependencias_comp(paquete.nombre, dict_dep["comp"], archivo)
         archivo.jump(tmpoffset)
         archivo.jump(tmpoffset) #Misterios de la ciencia, puede ser un bug del apt_pkg
         seccionvalida = archivo.step()
