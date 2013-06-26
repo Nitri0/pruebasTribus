@@ -6,7 +6,6 @@ class Mantenedor(models.Model):
     nombre_completo = models.CharField("nombre del mantenedor", max_length = 100)
     correo = models.EmailField("correo electronico del mantenedor", max_length= 75)
     
-    
     def __unicode__(self):
         return self.nombre_completo
     
@@ -14,10 +13,6 @@ class Mantenedor(models.Model):
     def fue_publicado_recientemente(self):
         return self.fecha_pub >= timezone.now() - datetime.timedelta(days=1)
     fue_publicado_recientemente.short_description = 'Publicación reciente?'
-
-    def fue_publicado_hoy(self):
-        return self.fecha_pub.date() == datetime.date.today()
-    fue_publicado_hoy.spaquetes = models.ManyToManyField('self', null=True, symmetrical = False, blank=True)hort_description = "Publicado hoy?"
     '''
     
     class Meta:
@@ -28,29 +23,88 @@ class DependenciaSimple(models.Model):
 
     def __unicode__(self):
         return self.dep.nombre
+    
+    
+    class Meta:
+        ordering = ["dep"]
+
 
 class DependenciaOR(models.Model):
     dep = models.ManyToManyField(DependenciaSimple, null=True, symmetrical = False, blank=True)
-     
+    
     def __unicode__(self): 
         x = ""
         for i in self.dep.only():
             x += i.dep.nombre + " | "
-        return string.strip(x, "| ") 
+        return string.strip(x, "| ")
+
+class PaqueteVirtual(models.Model):
+    nombre = models.CharField("nombre del paquete", max_length = 150)
     
+    def __unicode__(self):
+        return self.nombre
+    
+# class Paquete(models.Model):
+#     nombre = models.CharField("nombre del paquete", max_length = 150)
+#     version = models.CharField("version del paquete", max_length = 50, null = True)
+#     size = models.IntegerField("tamaño del paquete", null = True)
+#     instsize = models.IntegerField("tamaño una vez instalado")
+#     sha256 = models.CharField("SHA256 del paquete", max_length = 100)
+#     sha1 = models.CharField("SHA1", max_length = 100)
+#     md5sum = models.CharField("llave md5 del paquete", max_length = 75)
+#     descripcion = models.TextField("descripcion del paquete", max_length = 200)
+#     pagina = models.URLField("pagina web del paquete", max_length = 100, null = True)
+#     desmd5 = models.CharField("descripcion md5", max_length = 75, null = True)
+#     mantenedor = models.ForeignKey(Mantenedor, verbose_name = "nombre del mantenedor")
+#     seccion = models.CharField("seccion del paquete", max_length = 20)
+#     prioridad = models.CharField("prioridad del paquete", max_length = 20)
+#     nombrearchivo = models.CharField("nombre del archivo del paquete", max_length = 150)
+#     arquitectura = models.CharField("arquitectura del paquete", max_length = 200, choices = (
+#                      ('all', 'all'),
+#                      ('i386', 'i386'),
+#                      ('amd', 'amd'),
+#     ))
+#     dependenciaSimple = models.ManyToManyField(DependenciaSimple, null=True, symmetrical = False, blank=True)
+#     dependenciaOR = models.ManyToManyField(DependenciaOR, null=True, symmetrical = False, blank=True)
+#     
+#     class Meta:
+#         ordering = ["nombre"]
+#     
+#     def __unicode__(self):
+#         return self.nombre    
+#     
+#     def show_data(self):
+#         print self.nombre
+#         print self.arquitectura
+#         print self.mantenedor
+#         print self.dependenciaSimple
+    
+#Modelo paquete alternativo que permite el registro de un paquete solo con el nombre
 class Paquete(models.Model):
-    mantenedor = models.ForeignKey(Mantenedor, verbose_name = "nombre del mantenedor")
-    nombre = models.CharField("nombre del paquete", max_length = 100)
-    arquitectura = models.CharField("arquitectura del paquete", max_length = 10, choices = (
+    nombre = models.CharField("nombre del paquete", max_length = 150)
+    version = models.CharField("version del paquete", max_length = 50, null = True)
+    size = models.IntegerField("tamaño del paquete", null = True)
+    instsize = models.IntegerField("tamaño una vez instalado", null = True)
+    sha256 = models.CharField("SHA256 del paquete", max_length = 100, null = True)
+    sha1 = models.CharField("SHA1", max_length = 100, null = True)
+    md5sum = models.CharField("llave md5 del paquete", max_length = 75, null = True)
+    descripcion = models.TextField("descripcion del paquete", max_length = 200, null = True)
+    pagina = models.URLField("pagina web del paquete", max_length = 100, null = True)
+    desmd5 = models.CharField("descripcion md5", max_length = 75, null = True)
+    mantenedor = models.ForeignKey(Mantenedor, verbose_name = "nombre del mantenedor", null = True)
+    seccion = models.CharField("seccion del paquete", max_length = 20, null = True)
+    prioridad = models.CharField("prioridad del paquete", max_length = 20, null = True)
+    nombrearchivo = models.CharField("nombre del archivo del paquete", max_length = 150, null = True)
+    arquitectura = models.CharField("arquitectura del paquete", null = True, max_length = 200, choices = (
                      ('all', 'all'),
                      ('i386', 'i386'),
                      ('amd', 'amd'),
     ))
     dependenciaSimple = models.ManyToManyField(DependenciaSimple, null=True, symmetrical = False, blank=True)
     dependenciaOR = models.ManyToManyField(DependenciaOR, null=True, symmetrical = False, blank=True)
-    
+     
     class Meta:
         ordering = ["nombre"]
-    
+     
     def __unicode__(self):
-        return self.nombre    
+        return self.nombre
