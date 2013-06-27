@@ -4,12 +4,29 @@
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from paqueteria.models import Paquete,Mantenedor,DependenciaSimple,DependenciaOR
+from django.core.context_processors import request
 
 def index(request):
-    blender=Paquete.objects.all().
-    contexto = {"blender":blender}
-    print len (blender)
-    return render (request,'encuestas/index.html', contexto)
+    pqt = Paquete.objects.all()
+    contexto = {"pqt":pqt}
+    return render(request,'encuestas/paquetes.html', contexto)
+
+def inicio (request):
+    return render(request, 'encuestas/base.html')
+
+def busqueda(request,pqt):
+    print pqt
+    x = Paquete.objects.all().get(nombre = pqt)
+    contexto = {"i":x}
+    return render(request,'encuestas/detalles.html', contexto)
+    
+# 
+# def busqueda(request,paquete):
+#     print paquete
+#     pqt = Paquete.objects.all().filter(nombre = paquete)
+#     contexto = {"i":pqt}
+#     return render (request,'encuestas/detalles.html', contexto)
+    
 
 
 #def busqueda (request, valor):

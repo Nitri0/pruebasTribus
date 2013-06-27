@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html lang="es">
+<head>
+	
+	<meta charset = 'UTF-8' />
+	<title> {% block titulo%} {%endblock%} </title>
+	
+	
+</head>
+<body>
+	<header>
+		{% block encabezado%} {%endblock%}
+		<nav>
+			<ul>
+				<li> <a href="paquteria/index"> Index </li>	
+				<li> <a href="paqueteria/"> Inicio </li>								
+				<li> <a href="paqueteria/"> busqueda</a></li>
+			</ul>
+		</nav>
+		<hr />
+	</header>
+	
+	<section>
+		{% block contenido%} {%endblock%}
+		
+	</section>
+	
+	<footer>
+		<p> Esto es una prueba =D </p>
+	</footer>
+	
+</body>	
+</html>

@@ -186,6 +186,6 @@ def registrar_paquetes(archivo):
         archivo.jump(tmpoffset) #Misterios de la ciencia, puede ser un bug del apt_pkg
         seccionvalida = archivo.step()
         
-a1 = apt_pkg.TagFile(open('/home/fran/Packages'))
+a1 = apt_pkg.TagFile(open('/home/usuario/Packages'))
 blacklist = []
 registrar_paquetes(a1)

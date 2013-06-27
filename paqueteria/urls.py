@@ -6,8 +6,11 @@ from paqueteria import views
 urlpatterns = patterns('',
                        
                 
-    url(r'^$', views.index, name='index'),
+    url(r'^$', views.inicio, name='inicio'),
+    url(r'^/index$', views.index, name='index'),
     #url(r'^/admin$')
+    url(r'^(?P<pqt>\w*)', views.busqueda, name='busqueda'),
+    
     )
 '''    
     url(r'^(?P<encuesta_id>\d+)/$', views.detalles, name='detalles'), 

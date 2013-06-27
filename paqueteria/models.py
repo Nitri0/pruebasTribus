@@ -102,7 +102,7 @@ class Paquete(models.Model):
     ))
     dependenciaSimple = models.ManyToManyField(DependenciaSimple, null=True, symmetrical = False, blank=True)
     dependenciaOR = models.ManyToManyField(DependenciaOR, null=True, symmetrical = False, blank=True)
-     
+    
     class Meta:
         ordering = ["nombre"]
      
