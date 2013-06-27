@@ -1,15 +1,5 @@
 '''
-COSAS POR HACER:
-
-- Agregar al modelo Paquete los siguientes campos: Source, Suggests, Recommends, Breaks, Replaces, Conflicts,
-Provides, Pre-Depends, Tag, Essential, y otras que no haya visto por alli.
-- Mejorar el registro de paquetes, hacer un caso mas generico con una estructura mas flexible, previendo 
-posibles cambios futuros tanto en la estructura de Tribus como en el formato de los archivos de control de debian.
-- Analizar la estructura de los modelos actuales para determinar si es necesario o aporta alguna caracteristica 
-importante el grado de complejidad que tiene actualmente.
-- Actualmente muchos metodos combinan la busqueda y creacion de instancias de los modelos. Seria mas conveniente separar 
-las consultas de la creacion de instancias?
-- El caso mas complejo de busquedas es el de los paquetes, por la cantidad de atributos que se deben registrar.
+V1 de ingreso de datos
 
 '''
 
