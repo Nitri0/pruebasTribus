@@ -8,9 +8,10 @@ archivo = apt_pkg.TagFile(open('/home/fran/Packages'))
 def paqueteVirtual(nombre, archivo):
     archivo.jump(0)
     for section in archivo:
-        if section.get('Provides') == nombre:
-            return section.get('Package')
-    return None
+        #if section.get('Provides') == nombre:
+        if nombre in str(section.get('Provides')):
+            return section.get('Package'), section.get('Provides') 
+    return None, None
         
 def paqueteExiste(nombre, archivo):
     for section in archivo:
@@ -29,9 +30,8 @@ while salir == False:
     if resultado:
         print resultado
     else:
-        virtual = paqueteVirtual(paquete, archivo)
+        proveedor, virtual = paqueteVirtual(paquete, archivo)
         if virtual != None:
-            print "El paquete seleccionado es un paquete virtual provisto por: "
-            print virtual
+            print virtual, " <--- provisto por ------> ", proveedor
         else:
             print "El paquete seleccionado no se encuentra en el repositorio y tampoco es un paquete virtual"
