@@ -17,6 +17,16 @@ def buscar_mantenedor(str_mant):
         nMantenedor.save()
     return nMantenedor
 
+def buscar_paquete_virtual(nombre_pq):
+    paquete_existe = Paquete.objects.filter(nombre = nombre_pq)
+    if len(paquete_existe):
+        return paquete_existe[0]
+    else:
+        print "Registrando paquete virtual %s" % nombre_pq
+        nPaquete = Paquete(nombre = nombre_pq)
+        nPaquete.save()
+        return nPaquete
+
 def buscar_paquete(paquete):
     if paquete != None:
         nombre_pq = paquete['Package'] if paquete.has_key('Package') else None
@@ -69,7 +79,11 @@ def ubicar_dependencias(paquete, dic_dep):
         if len(dep) == 1:
             lista_tmp.append(dep[0]['name']) # Para cada elemento de las dependencias guardare solo el nombre de momento
     dic_dep[paquete['Package']] = lista_tmp
-    
+
+def ubicar_paquetes_virtuales(paquete, dic_vir):
+    if paquete.has_key('Provides'):
+        dic_vir[paquete['Package']] = paquete.relations['Provides']
+
 def registrar_dependencias(dic_dep):
     for dep in dic_dep.items():
         if len(dep[1]):
@@ -81,16 +95,34 @@ def registrar_dependencias(dic_dep):
                     continue
                 ds = buscar_ds_bd(pq_ds)
                 pq.dependenciaSimple.add(ds)
-    
+
+def registrar_paquetes_virtuales(dic_vir):
+    for vir in dic_vir.items():
+        #print "Dupla virtual:", vir
+        if len(vir[1]) > 1:
+            for v in vir[1]:
+                if len(v) > 1:
+                    # En este caso no estoy claro que pasa y por eso lo comento
+                    # Este debe ser para paquetes virtuales opcionales
+                    pass
+                else:
+                    buscar_paquete_virtual(v[0]['name'])
+        else:
+            buscar_paquete_virtual(vir[1][0][0]['name'])
+            
 def registrar_paquetes(archivo):
     dic_dep = {}
+    dic_vir = {}
     for paquete in deb822.Packages.iter_paragraphs(a1):
-        #buscar_paquete(paquete)
-        ubicar_dependencias(paquete, dic_dep)
-        
-    print "Ubicacion de dependencias finalizada"    
-    registrar_dependencias(dic_dep)
+        buscar_paquete(paquete) # 1) Registrar los paquetes
+        ubicar_paquetes_virtuales(paquete, dic_vir) # 2) Ubicar paquetes virtuales
+        #ubicar_dependencias(paquete, dic_dep)
+    registrar_paquetes_virtuales(dic_vir) # 3) Registrar paquetes virtuales
+    #print "Ubicacion de dependencias finalizada"    
+    #registrar_dependencias(dic_dep)
+    #print len(dic_vir)
     
 registrar_paquetes(a1)
 print "Finalizado"
+
 
