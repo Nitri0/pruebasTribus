@@ -108,6 +108,8 @@ WSGI_APPLICATION = 'pruebasTribus.wsgi.application'
 
 TEMPLATE_DIRS = (
     "/home/usuario/workspace/pruebasTribus/plantillas/",
+    "/home/usuario/workspace/pruebasTribus/plantillas/admin/",
+    "/home/usuario/workspace/pruebasTribus/plantillas/encuestas/",
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.

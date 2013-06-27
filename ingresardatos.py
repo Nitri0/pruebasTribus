@@ -190,9 +190,9 @@ def registrar_paquetes(archivo):
         archivo.jump(tmpoffset) #Misterios de la ciencia, puede ser un bug del apt_pkg
         seccionvalida = archivo.step()
         
-a1 = apt_pkg.TagFile(open('/home/fran/Packages'))
-#registrar_paquetes(a1)
+a1 = apt_pkg.TagFile(open('/home/usuario/Packages'))
+registrar_paquetes(a1)
 
 #lista = comparar_con_archivo(a1)
-lista = comparar_con_archivo(a1)
-print lista
+#lista = comparar_con_archivo(a1)
+#print lista

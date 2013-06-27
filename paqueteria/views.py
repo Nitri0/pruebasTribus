@@ -12,7 +12,8 @@ def index(request):
     return render(request,'encuestas/paquetes.html', contexto)
 
 def inicio (request):
-    return render(request, 'encuestas/base.html')
+    return render(request, 'encuestas/inicio.html')
+
 
 def busqueda(request,pqt):
     print pqt

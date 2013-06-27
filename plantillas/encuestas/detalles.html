@@ -1,7 +1,12 @@
-
+{%extends 'base.html'%}
 {% load url from future %}
 
+{% block titulo%} Sistema de busqueda{%endblock%}
 
+{% block encabezado%} <p> <center><h1>Busqueda </center></h1></p> {%endblock%}
+
+
+{%block contenido%}
 
 <div><p> el paquete es : {{ i.nombre }}</p> </div>
 <div> 
@@ -12,8 +17,13 @@
    <p> sha1: {{i.sha1 }}</p>
    <p> md5sum: {{i.md5sum }}</p>
    <p> descripcion: {{i.descripcion}} </p>
-   <p> pagina: {{i.pagina }}</p>
+   <p> pagina: <a href="{{i.pagina}}">{{i.pagina }}</a></p>
    <p> demd5: {{i.desmd5}} </p>
+   <p> dependencias:
+   	{%for x in i.dependenciaSimple.only%}
+   	 <a href="{{x}}" >{{x}}</a>
+   	 {% endfor %}
+   	  </p>
    <p> mantenedor: {{i.mantenedor}} </p>
    <p> seccion: {{i.seccion }}</p>
    <p> prioridad: {{i.prioridad }}</p>
@@ -21,3 +31,4 @@
    <p> arquitectura: {{i.arquitectura}} </p>
 	 </div>
 
+{%endblock%}

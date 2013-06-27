@@ -9,8 +9,10 @@ urlpatterns = patterns('',
     url(r'^$', views.inicio, name='inicio'),
     url(r'^/index$', views.index, name='index'),
     #url(r'^/admin$')
-    url(r'^(?P<pqt>\w*)', views.busqueda, name='busqueda'),
-    
+    #url(r'^(?P<pqt>\w*-?\w*)', views.busqueda, name='busqueda'),
+    #url(r'^(?P<pqt>\w*\.*?-*\w*)', views.busqueda, name='busqueda'),
+    #url(r'^(?P<pqt>(\w*-?\w*:-*?\w*)', views.busqueda, name='busqueda'),
+    url(r'^(?P<pqt>(\w*\W*)*)', views.busqueda, name='busqueda'),
     )
 '''    
     url(r'^(?P<encuesta_id>\d+)/$', views.detalles, name='detalles'), 
