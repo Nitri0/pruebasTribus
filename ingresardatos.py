@@ -1,9 +1,23 @@
-import email.Utils
+'''
+COSAS POR HACER:
+
+- Agregar al modelo Paquete los siguientes campos: Source, Suggests, Recommends, Breaks, Replaces, Conflicts,
+Provides, Pre-Depends, Tag, Essential, y otras que no haya visto por alli.
+- Mejorar el registro de paquetes, hacer un caso mas generico con una estructura mas flexible, previendo 
+posibles cambios futuros tanto en la estructura de Tribus como en el formato de los archivos de control de debian.
+- Analizar la estructura de los modelos actuales para determinar si es necesario o aporta alguna caracteristica 
+importante el grado de complejidad que tiene actualmente.
+- Actualmente muchos metodos combinan la busqueda y creacion de instancias de los modelos. Seria mas conveniente separar 
+las consultas de la creacion de instancias?
+- El caso mas complejo de busquedas es el de los paquetes, por la cantidad de atributos que se deben registrar.
+
+'''
+
+import email.Utils, re, string
 from django.core.management import setup_environ
 from pruebasTribus import settings
 from apt import apt_pkg
-from paqueteria.models import Mantenedor, Paquete, DependenciaSimple, DependenciaOR
-import re, string
+from paqueteria.models import Mantenedor, Paquete, DependenciaSimple, DependenciaOR 
 
 setup_environ(settings)
 apt_pkg.init()
@@ -65,7 +79,7 @@ def buscar_paquete(seccion, npaquete = None):
             nPaquete = Paquete(nombre = npaquete)
             nPaquete.save()
             return nPaquete
-        
+     
 def listar_dependencias(seccion):
     dependencias = {}
     dependencias["simples"] = []
@@ -121,55 +135,55 @@ def buscar_dep_comp(seccion, dep):
     
 def registrar_dependencias_simples(paquete, lista_dependencias, archivo):
     for dep in lista_dependencias:
-        if dep in blacklist:
-            print "En algun momento paso por aqui de verdad?"
-            continue
         d = dep.nombre
         sect = buscar_seccion(d, archivo)
         if sect != None:
             depsim = buscar_dep_simple(sect)
             depsim.save()
             paquete.dependenciaSimple.add(depsim)
-        else:
-            blacklist.append(d)
-            
+        
 def registrar_dependencias_comp(npaquete, lista_dependencias, archivo):
     if lista_dependencias:
         for dep in lista_dependencias:
             sec = buscar_seccion(npaquete, archivo)
             depcomp = buscar_dep_comp(sec, dep)
-            if depcomp.dep.all():
-                print "No hago nada porque ya estan registradas las dependencias"
-            else:
+            if not depcomp.dep.all():
                 for d in dep:
                     n = d.nombre
                     sect = buscar_seccion(n, archivo)
-                    #if sect != None:
                     ds = buscar_dep_simple(sect, n)
                     ds.save()
                     depcomp.dep.add(ds)
-                    #else:
-                    #    print "Probablemente se trate de un paquete virtual: ", n
-                        # Como puedo crear una dependencia hacia un paquete virtual?
-                        # el paquete virtual no saldra en la lista y necesito informacion
-                        # para registrarlo debidamente.
-                        # Conceptualmente hay un fallo aqui porque el modelo planteado 
-                        # solo permite el registro de depencias que esten en la lista
-                        # mientras que las dependencias virtuales no son tomadas en cuenta
-                        # esto puede resolverse agregando un modelo para representar las
-                        # dependencias virtuales.
-                        # Lo ideal seria que pudiera registrar juntas dependencias reales y dependencias
-                        # virtuales, pero algo me dice que no podre =/ por restricciones de la clave 
-                        # foranea que me pedira un mismo tipo de objeto al cual referenciar.
-                        # La unica solucion que se me ocurre por el momento es modificar el modelo 
-                        # paquete para que acepte valores nulos y vacios en todos sus campos, menos en el nombre
-                        # de modo que pueda registrar paquetes solo con su nombre, lo cual representaria 
-                        # los paquetes virtuales. En teoria esta solucion mantendria el concepto original 
-                        # y resuelve el conflicto de los paquetes virtuales sin muchas consecuencias.
-                        # Seria util agregar unas consultas para demostrar la utilidad de este concepto, 
-                        # es decir consultas que soliciten todos los paquetes que dependen de X dependencia
-                        # simple o compuesta
-                       
+                    
+def comparar_con_archivo(archivo):
+    lista_diff = []
+    #archivo.jump(0)
+    #archivo.jump(0) # Esto se utiliza de esta manera en caso de que el archivo haya sido utilizado previamente
+    # para ubicarse en el inicio del mismo. Si no se ha 'tocado' el archivo, estas lineas no son necesarias
+    lista_paquetes = Paquete.objects.all()
+    
+    for section in archivo:
+        pq = section.get('Package')
+        md5 = section.get('MD5sum')
+        if lista_paquetes.filter(nombre = pq):
+            if md5 == lista_paquetes.get(nombre = pq).md5sum:
+                print "El MD5 del paquete %s es igual, no hay que hacer cambios" % pq
+
+def comparar_con_archivo2(archivo):
+    lista_diff = []
+    archivo.jump(0)
+    archivo.jump(0) # Esto se utiliza de esta manera en caso de que el archivo haya sido utilizado previamente
+    # para ubicarse en el inicio del mismo. Si no se ha 'tocado' el archivo, estas lineas no son necesarias
+    #lista_paquetes = Paquete.objects.all()
+    for section in archivo:
+        pq = Paquete.objects.filter(nombre = section.get('Package'))  
+        if pq:
+            if section.get('MD5sum') == pq[0].md5sum:
+                print "El paquete", section.get('Package'), "no ha sufrido modificaciones"
+            else:
+                lista_diff.append(section)
+    return lista_diff
+    
 def registrar_paquetes(archivo):
     tmpoffset = 0
     seccionvalida = True
@@ -187,5 +201,8 @@ def registrar_paquetes(archivo):
         seccionvalida = archivo.step()
         
 a1 = apt_pkg.TagFile(open('/home/fran/Packages'))
-blacklist = []
-registrar_paquetes(a1)
+#registrar_paquetes(a1)
+
+#lista = comparar_con_archivo(a1)
+lista = comparar_con_archivo(a1)
+print lista

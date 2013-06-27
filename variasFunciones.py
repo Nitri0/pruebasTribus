@@ -27,6 +27,34 @@ def paqueteExiste(nombre, archivo):
         else:
             paqueteVirtual(nombre, archivo)
             
+def generar_dict_paquetes(tagFile):
+    dic = {}
+    for seccion in tagFile:
+        dic[seccion.get('Package')] = seccion
+    return dic
+
+def comparar_archivos(nuevos, anteriores, debug = False):
+    dic_ant = generar_dict_paquetes(anteriores)
+    dic_nue = generar_dict_paquetes(nuevos)
+    nuevos_paquetes = []
+    actualizar_paquetes = []
+    for paquete in dic_nue.keys():
+        if paquete in dic_ant.keys():
+            if debug:
+                print paquete, "ya esta incluido"
+            if dic_nue[paquete].get('MD5sum') == dic_ant[paquete].get('MD5sum'):
+                if debug:
+                    print  paquete, "no tiene cambios"
+            else: 
+                if debug:
+                    print  paquete, "tiene nueva informacion o es una nueva version"
+                actualizar_paquetes.append(dic_nue[paquete])
+        else:
+            if debug: 
+                print paquete, "no esta incluido"
+            nuevos_paquetes.append(dic_nue[paquete])
             
+    return actualizar_paquetes, nuevos_paquetes
             
+paqueteExiste("libjpeg-dev", paquetes)   
     
