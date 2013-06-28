@@ -1,6 +1,5 @@
 '''
 V1 de ingreso de datos
-
 '''
 
 import email.Utils, re, string
@@ -64,8 +63,7 @@ def buscar_paquete(seccion, npaquete = None):
             return nPaquete
     else:
         if npaquete:
-            # si la seccion es nula, es probable que se trate de un paquete virtual
-            # por lo tanto creamos aqui un paquete solo con el nombre
+            # Registro de paquete virtual
             nPaquete = Paquete(nombre = npaquete)
             nPaquete.save()
             return nPaquete
@@ -145,25 +143,10 @@ def registrar_dependencias_comp(npaquete, lista_dependencias, archivo):
                     ds.save()
                     depcomp.dep.add(ds)
                     
-def comparar_con_archivo(archivo):
-    lista_diff = []
-    #archivo.jump(0)
-    #archivo.jump(0) # Esto se utiliza de esta manera en caso de que el archivo haya sido utilizado previamente
-    # para ubicarse en el inicio del mismo. Si no se ha 'tocado' el archivo, estas lineas no son necesarias
-    lista_paquetes = Paquete.objects.all()
-    
-    for section in archivo:
-        pq = section.get('Package')
-        md5 = section.get('MD5sum')
-        if lista_paquetes.filter(nombre = pq):
-            if md5 == lista_paquetes.get(nombre = pq).md5sum:
-                print "El MD5 del paquete %s es igual, no hay que hacer cambios" % pq
-
 def comparar_con_archivo2(archivo):
     lista_diff = []
     archivo.jump(0)
-    archivo.jump(0) # Esto se utiliza de esta manera en caso de que el archivo haya sido utilizado previamente
-    # para ubicarse en el inicio del mismo. Si no se ha 'tocado' el archivo, estas lineas no son necesarias
+    archivo.jump(0)
     #lista_paquetes = Paquete.objects.all()
     for section in archivo:
         pq = Paquete.objects.filter(nombre = section.get('Package'))  
@@ -194,5 +177,5 @@ a1 = apt_pkg.TagFile(open('/home/fran/Packages'))
 #registrar_paquetes(a1)
 
 #lista = comparar_con_archivo(a1)
-lista = comparar_con_archivo(a1)
+lista = comparar_con_archivo2(a1)
 print lista
