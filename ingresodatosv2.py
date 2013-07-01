@@ -1,7 +1,6 @@
 import email.Utils, re, string
 from django.core.management import setup_environ
 from pruebasTribus import settings
-#from apt import apt_pkg
 from paqueteria.models import Mantenedor, Paquete, DependenciaSimple, DependenciaOR 
 from debian import deb822
 
@@ -57,7 +56,7 @@ def buscar_paquete(paquete):
                                arquitectura = arquitectura_pq, md5sum = md5sum_pq)
             nPaquete.save()
             return nPaquete
-    
+
 def buscar_pq_bd(nombre):
     pq_existe = Paquete.objects.filter(nombre = nombre)
     if len(pq_existe):
@@ -91,19 +90,18 @@ def registrar_dependencias(dic_dep):
             for d in dep[1]:
                 print "Registrando dependencia %s" % d
                 pq_ds = buscar_pq_bd(d)
-                if pq_ds == None: # Hasta ahora esto me indica que es un paquete virtual
+                if pq_ds == None: 
+                    # Paquetes virtuales
                     continue
                 ds = buscar_ds_bd(pq_ds)
                 pq.dependenciaSimple.add(ds)
 
 def registrar_paquetes_virtuales(dic_vir):
     for vir in dic_vir.items():
-        #print "Dupla virtual:", vir
         if len(vir[1]) > 1:
             for v in vir[1]:
                 if len(v) > 1:
-                    # En este caso no estoy claro que pasa y por eso lo comento
-                    # Este debe ser para paquetes virtuales opcionales
+                    # Paquetes virtuales opcionales
                     pass
                 else:
                     buscar_paquete_virtual(v[0]['name'])

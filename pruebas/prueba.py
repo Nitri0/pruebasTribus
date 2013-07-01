@@ -1,5 +1,5 @@
 import re, apt_pkg, debian.deb822, hashlib, email
-import debian
+from gatherer import aux
 
 apt_pkg.init()
 
@@ -34,9 +34,25 @@ class packages_gatherer(object):
     descriptionquery = """EXECUTE description_insert
         (%(Package)s, %(Language)s,
         %(Description)s, %(Long_Description)s, %(Description-md5)s)"""
-        
+    
     def __init__(self):
-        pass
+        #gatherer.__init__(self, connection, config, source)
+        # The ID for the distribution we want to include
+        self._distr = None
+        #self.assert_my_config('directory', 'archs', 'release', 'components', 'distribution', 'packages-table', 'packages-schema')
+        self.warned_about = {}
+        # A mapping from <package-name><version> to 1 If <package-name><version> is
+        # included in this dictionary, this means, that we've already added this
+        # package with this version for architecture 'all' to the database. Needed
+        # because different architectures include packages for architecture 'all'
+        # with the same version, and we don't want these duplicate entries
+        self.imported_all_pkgs = {}
+        self.add_descriptions = False
+        
+    def assert_my_config(self, *keywords):
+        for k in keywords:
+            if not k in self.my_config:
+                raise aux.ConfigException("%s not specified for source %s" % (k, self.source))
         
     def build_dict(self, control):
         """
@@ -99,46 +115,30 @@ class packages_gatherer(object):
             for f in ['Installed-Size', 'Size']:
                 if d[f] is not None:
                     d[f] = int(d[f])
-        
+            
             # Source is non-mandatory, but we don't want it to be NULL
-            if d['Source'] is None:
-                d['Source'] = d['Package']
-                d['Source_Version'] = d['Version']
-            else:
-                split = d['Source'].strip("'").split()
-            if len(split) == 1:
-                d['Source_Version'] = d['Version']
-            else:
-                d['Source'] = split[0]
-                d['Source_Version'] = split[1].strip("()")
-
+#             if d['Source'] is None:
+#                 d['Source'] = d['Package']
+#                 d['Source_Version'] = d['Version']
+#             else:
+#                 split = d['Source'].strip("'").split()
+#             if len(split) == 1:
+#                 d['Source_Version'] = d['Version']
+#             else:
+#                 d['Source'] = split[0]
+#                 d['Source_Version'] = split[1].strip("()")
+ 
             d['maintainer_name'], d['maintainer_email'] = email.Utils.parseaddr(d['Maintainer'])
             pkgs.append(d)
         
         return pkgs, pkgdescs 
-        
-        '''try:
-            cur.executemany(self.pkgquery, pkgs)
-        except psycopg2.ProgrammingError:
-            print "Error while inserting packages"
-            raise
-        try:
-            if self.add_descriptions:
-                cur.executemany(self.descriptionquery, pkgdescs)
-        except psycopg2.ProgrammingError:
-            print "Error while inserting descriptions"
-            raise'''
-    
-    
-    
-a1 = apt_pkg.TagFile(open('/home/fran/Packages'))
 
-for pkg in debian.deb822.Packages.iter_paragraphs(file('/home/fran/Packages')):
-    if pkg.has_key('Maintainer'):# and re.search(pkg['maintainer']):
-        print pkg['package']
-
-
+#a1 = file('/home/fran/Packages')
 #pg = packages_gatherer()
-#pg.import_packages(a1)
+#pq, pqd = pg.import_packages(a1)
+#print "Termine =)"
+#for i in pq:
+#    print i
 
-#print d
+
+
