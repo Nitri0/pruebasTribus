@@ -191,8 +191,8 @@ def registrar_paquetes(archivo):
         seccionvalida = archivo.step()
         
 a1 = apt_pkg.TagFile(open('/home/usuario/Packages'))
-registrar_paquetes(a1)
+#registrar_paquetes(a1)
 
+lista = comparar_con_archivo2(a1)
 #lista = comparar_con_archivo(a1)
-#lista = comparar_con_archivo(a1)
-#print lista
+print lista

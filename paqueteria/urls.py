@@ -8,6 +8,7 @@ urlpatterns = patterns('',
                 
     url(r'^$', views.inicio, name='inicio'),
     url(r'^/index$', views.index, name='index'),
+    #url(r'^/contact$', views.contacto, name='contacto'),
     #url(r'^/admin$')
     #url(r'^(?P<pqt>\w*-?\w*)', views.busqueda, name='busqueda'),
     #url(r'^(?P<pqt>\w*\.*?-*\w*)', views.busqueda, name='busqueda'),

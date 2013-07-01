@@ -5,7 +5,7 @@ from pruebasTribus import settings
 from paqueteria.models import Mantenedor, Paquete, DependenciaSimple, DependenciaOR 
 from debian import deb822
 
-a1 = file('/home/fran/Packages')
+a1 = file('/home/usuario/Packages')
 
 def buscar_mantenedor(str_mant):
     nombreMan, correoMan = email.Utils.parseaddr(str_mant)

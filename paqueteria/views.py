@@ -2,14 +2,40 @@
 
 # -*- coding: utf-8 -*-
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
+from django.shortcuts import render, get_object_or_404, render_to_response
 from paqueteria.models import Paquete,Mantenedor,DependenciaSimple,DependenciaOR
 from django.core.context_processors import request
+#from form import *
+
+
+
 
 def index(request):
     pqt = Paquete.objects.all()
     contexto = {"pqt":pqt}
     return render(request,'encuestas/paquetes.html', contexto)
+
+# def search (request):
+#     query = request.Get.get('q', '')
+#     if query:
+#         qset =(
+#               Q(Mantenedor__nombre__icontains = query) |
+#               Q(Paquete__nombre__icontains = query) |
+#               Q(Paquete__descripcion__icontains = query)
+#               )
+#         result = Paquete.objects.filter(qset).distinct()
+#     else:
+#         result = []
+#     return render_to_response ("encuentas/search.html",{
+#                                         "request" : request,
+#                                         "query" : query} 
+#                                )
+        
+
+
+def contacto (request):
+    pass
 
 def inicio (request):
     return render(request, 'encuestas/inicio.html')
